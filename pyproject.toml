@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "msmanager"
+version = "0.1.0"
+description = "Manager for managing Mindusrty servers."
+authors = ["Romanin <semina054@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "msmanager"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+"screens.py" = "^0.4.5"
+pydantic = "^1.10.7"
+platformdirs = "^3.5.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
