@@ -1,5 +1,6 @@
 import platform
 from subprocess import getstatusoutput
+from typing import Callable
 from .units import SUPPORT_PLATFORMS
 from .exceptions import PlatformSupportError, ScreenNotWorkingError
 
@@ -15,5 +16,3 @@ def checking_platform() -> None:
         raise PlatformSupportError(tag)
     if not exists_screen():
         raise ScreenNotWorkingError()
-
-# ! ...
