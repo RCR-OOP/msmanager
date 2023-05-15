@@ -93,7 +93,36 @@ files = [
     {file = "typing_extensions-4.5.0.tar.gz", hash = "sha256:5cb5f4a79139d699607b3ef622a1dedafa84e115ab0024e0d9c044a9479ca7cb"},
 ]
 
+[[package]]
+name = "vbml"
+version = "1.1.post1"
+description = "Way to check, match & resist. Sofisticated object oriented regex-based text parser"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "vbml-1.1.post1-py3-none-any.whl", hash = "sha256:e3037c3f67b79128c48a100326fde833345e7d1e0d466566d37c2c98d08a587d"},
+    {file = "vbml-1.1.post1.tar.gz", hash = "sha256:59e852b35b2c4d3f8e7d927ab2e0a9dde753f3427ab9a61aca7ed2f4d3986f3c"},
+]
+
+[package.dependencies]
+typing_extensions = "*"
+
+[[package]]
+name = "versioner.py"
+version = "1.1.0"
+description = "A simple versioning module, with the ability to customise to any version-system."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "versioner.py-1.1.0-py3-none-any.whl", hash = "sha256:62fb0888462598ea8a1f1b73add14f381701f52c5366771dd897fdedf18f54ac"},
+]
+
+[package.dependencies]
+vbml = "*"
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "678bff3fd3a84816973804382b9052280b2b98346d3c13bfd6968c3e6a8b4e9b"
+content-hash = "96f2e9191ddeba1ce0e023cff3a942099ab5a8999fd2ae72e7d6e85076b675ae"

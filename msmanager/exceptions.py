@@ -20,6 +20,20 @@ class ScreenNotWorkingError(Exception):
             """The screen command returns an error when checked, check that the 'GNU Screen' program is working. \nIf the software is not available, the following program must be installed: https://www.gnu.org/software/screen""",
         )
 
+class JavaNotFound(Exception):
+    """Indicates a lack of `Java`."""
+    def __init__(self) -> None:
+        """Called if the `Java` package environment could not be found."""
+        self.args = ("The `Java` environment package is not installed.",)
+
+# ! Parsing Error
+class VBMLParseError(Exception):
+    """Indicates a parsing error."""
+    def __init__(self) -> None:
+        """Calls if `vbml` was unable to finish parsing."""
+        self.args = ("There was an error parsing through vbml.",)
+
+
 # ! Config Exceptions
 class ServerExistsError(Exception):
     """Indicates that there is a server with this name."""

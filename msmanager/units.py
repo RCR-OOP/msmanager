@@ -14,3 +14,6 @@ SUPPORT_PLATFORMS = [
 ]
 CONFIG_DIRPATH = user_config_dir(__name__, __author__)
 CONFIG_PATH = os.path.join(CONFIG_DIRPATH, "msmanager_config.json")
+
+# ! For Parsing
+COLORS_STRINGS_REPLACEBLE = { f"\x1b[{i}m": "" for i in range(100) }
