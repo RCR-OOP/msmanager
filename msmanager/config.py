@@ -1,6 +1,7 @@
 import os
+import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 from .models import MainConfig, MindustryServerConfig
 from .exceptions import (
     ServerExistsError, ServerNotExistsError
@@ -17,22 +18,30 @@ class MSManagerConfig:
         with open(filepath, "w") as file:
             file.write(data.json())
     
+    @staticmethod
+    def json_load(filepath: str) -> Dict[str, Any]:
+        with open(filepath) as file:
+            return json.load(file)
+    
+    @staticmethod
+    def json_dump(filepath: str, data: Dict[str, Any]) -> None:
+        with open(filepath, "w") as file:
+            json.dump(data, file)
+    
     def refresh(self) -> None: self.dump(self.name, self.config)
     
     def __init__(self, config_path: str) -> None:
         self.name = os.path.abspath(config_path)
         self.name_path = Path(self.name)
         
+        config_data = MainConfig().dict()
         if self.name_path.exists():
-            try:
-                self.config = self.load(self.name)
-            except:
-                self.config = MainConfig()
-                self.refresh()
-        else:
-            self.config = MainConfig()
-            self.refresh()
-    
+            try: config_data.update(self.json_load(self.name))
+            except: pass
+        try: self.config = MainConfig.parse_obj(config_data)
+        except: self.config = MainConfig()
+        self.refresh()
+
     def get_server(self, screen_name: str) -> Optional[MindustryServerConfig]:
         for server in self.config.servers:
             if server.screen_name == screen_name:

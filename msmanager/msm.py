@@ -1,12 +1,13 @@
 import os
 from typing import Optional
+from screens import ScreenSession
 from versioner import Version
 # * Local Imports
 from .units import CONFIG_PATH
 from .config import MSManagerConfig
 from .models import MindustryServerConfig
-from .functions import get_mindustry_server_version, checking_environment
 from .exceptions import ServerNotExistsError
+from .functions import get_mindustry_server_version, checking_environment
 
 class MSManager:
     def __init__(self, config_path: str=CONFIG_PATH) -> None:
@@ -27,9 +28,14 @@ class MSManager:
     def exists_server_config(self, screen_name: str) -> bool: self.config.exists_server(screen_name)
     def remove_server_config(self, screen_name: str) -> None: self.config.remove_server(screen_name)
 
-    # ? ...
+    # ? Server Managemant
     def check_server_version(self, screen_name: str) -> Version:
         if (server_config:=self.get_server_config(screen_name)) is not None:
             return get_mindustry_server_version(server_config.executable_filepath)
         raise ServerNotExistsError(screen_name)
-            
+    
+    def start_server(screen_name: str) -> None:
+        pass
+
+    def stop_server(screen_name: str) -> None:
+        pass
