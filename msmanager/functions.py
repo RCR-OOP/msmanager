@@ -19,6 +19,9 @@ def replaces(string: str, replaceble: Dict[str, str]) -> str:
         string = string.replace(__old, __new)
     return string
 
+def rich_exception(exception: Exception) -> str:
+    return f"[red]{exception.__class__.__name__}:[/] {' '.join(exception.args)}"
+
 # ! Subproccess Functions
 def runner(*args: str) -> Tuple[int, str]:
     return getstatusoutput(" ".join([*args]))

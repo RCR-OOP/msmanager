@@ -1,4 +1,3 @@
-from typing import Any
 from .units import SUPPORT_PLATFORMS
 
 # ! System Exceptions
@@ -47,4 +46,21 @@ class ServerNotExistsError(Exception):
         """Called if a server with this name does not exist in the config."""
         self.args = (
             f"A server named {repr(name)} does not exist in the config."
+        )
+
+# ! Server Actions Exceptions
+class ServerIsStartedError(Exception):
+    """Indicates that the server is already running."""
+    def __init__(self, name: str) -> None:
+        """Called when attempting to start an already running server."""
+        self.args = (
+            f"A server named {repr(name)} is already up and running."
+        )
+
+class ServerIsStoppedError(Exception):
+    """..."""
+    def __init__(self, name: str) -> None:
+        """..."""
+        self.args = (
+            f"The {repr(name)} server is stopped as it is."
         )
