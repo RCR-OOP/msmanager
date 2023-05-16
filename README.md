@@ -6,7 +6,7 @@ Manager for managing Mindusrty servers.
 python3 -m pip install --upgrade msmanager
 ```
 ## Usage
-```shell
+```
 Usage: python -m msmanager [OPTIONS] COMMAND [ARGS]...
 
 Options:
