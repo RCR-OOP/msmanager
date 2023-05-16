@@ -63,7 +63,7 @@ def starter(screen_name: str, wait: bool):
 # ? Stop Command
 @click.command("stop", help="Stop the server.")
 @click.argument("screen_name", type=str)
-def stoped(screen_name: str):
+def stoper(screen_name: str):
     try:
         msmanager.stop_server(screen_name)
         console.print("[green]>[/] Server [bold yellow]stoped[/]!")
@@ -72,11 +72,20 @@ def stoped(screen_name: str):
 
 # ? List Command
 @click.command("list", help="List of servers in the config.")
-def stoped():
+def lister():
     try:
         if len(msmanager.config.config.servers) != 0:
-            for server in msmanager.config.config.servers:
-                console.print(f"- [green]{repr(server.screen_name)}[/] ([green]{repr(server.executable_filepath)}[/])")
+            for idx, server in enumerate(msmanager.config.config.servers):
+                console.print(
+                    "\n\t".join(
+                        [
+                            f"({idx}) Server [green]{server.screen_name}[/]:",
+                            f"[yellow]EXECUTABLE_FILEPATH[/]: {repr(server.executable_filepath)}",
+                            f"[yellow]ARGUMENTS[/]: {repr(' '.join(server.arguments))}",
+                            f"[yellow]HOST:PORT:INPUT_PORT[/]: [green]{server.host}[/]:{server.port}:{server.input_port}"
+                        ]
+                    )
+                )
         else:
             console.print("[green]>[/] The list of servers is [bold yellow]empty[/]!")
     except Exception as e:
@@ -84,7 +93,11 @@ def stoped():
 
 # ! Main Group
 @click.group()
-@click.option("--not-check-environment", "not_check_environment", is_flag=True)
+@click.option(
+    "--not-check-environment", "not_check_environment",
+    is_flag=True,
+    help="Disables checks for GNU Screen, Java and system support."
+)
 def main(not_check_environment: bool):
     global msmanager
     msmanager = MSManager(
@@ -95,7 +108,8 @@ def main(not_check_environment: bool):
 main.add_command(adder)
 main.add_command(remover)
 main.add_command(starter)
-main.add_command(stoped)
+main.add_command(stoper)
+main.add_command(lister)
 
 # ! Run
 def run():
