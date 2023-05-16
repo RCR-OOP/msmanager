@@ -2,6 +2,6 @@
 ## Description
 Manager for managing Mindusrty servers.
 ## Install
-```python
-# Coming soon...
+```shell
+python3 -m pip install --upgrade msmanager
 ```
