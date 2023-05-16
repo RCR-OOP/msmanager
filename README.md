@@ -10,7 +10,7 @@ python3 -m pip install --upgrade msmanager
 Usage: python -m msmanager [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --not-check-environment
+  --not-check-environment  Disables checks for GNU Screen, Java and system support.
   --help                   Show this message and exit.
 
 Commands:
@@ -18,4 +18,5 @@ Commands:
   list    List of servers in the config.
   remove  Remove the server from the config.
   start   Run the server.
+  stop    Stop the server.
 ```
