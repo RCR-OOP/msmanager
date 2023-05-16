@@ -4,7 +4,7 @@ from typing import Iterable
 from rich.console import Console
 # > Local Imports
 from .msm import MSManager
-from .functions import rich_exception
+from .functions import rich_exception, is_server_connect_correct, wait_start_server
 from .models import MindustryServerConfig
 
 # ! Vars
@@ -49,9 +49,13 @@ def remover(screen_name: str):
 # ? Start Command
 @click.command("start", help="Run the server.")
 @click.argument("screen_name", type=str)
-def starter(screen_name: str):
+@click.option("-w", "--wait", "wait", is_flag=True, help="Waiting for the server to start up.")
+def starter(screen_name: str, wait: bool):
     try:
         msmanager.start_server(screen_name)
+        if (server_config:=msmanager.get_server_config(screen_name)) is not None:
+            if is_server_connect_correct(server_config.host, server_config.port, server_config.input_port) and wait:
+                wait_start_server(server_config.host, server_config.port, server_config.input_port)
         console.print("[green]>[/] Server [bold yellow]started[/]!")
     except Exception as e:
         console.print(rich_exception(e))

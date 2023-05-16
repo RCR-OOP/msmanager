@@ -161,6 +161,18 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
+name = "pydustry-py"
+version = "2.0.0"
+description = "Module for server information in the game Mindustry."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pydustry.py-2.0.0-py3-none-any.whl", hash = "sha256:e9b533d8011b322aae4ad679728ee9acf145653a2d7881883843f479a2e74e8c"},
+    {file = "pydustry.py-2.0.0.tar.gz", hash = "sha256:6cc2dc8eb1dca560c6a3c3c653567c8375ff349bbcd3133aa8f9f81b6139d393"},
+]
+
+[[package]]
 name = "pygments"
 version = "2.15.1"
 description = "Pygments is a syntax highlighting package written in Python."
@@ -254,4 +266,4 @@ vbml = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "3a02c5fdc2175cdfe337f7f2a6832ef0cca2d53e502ff1ae3279b2924f6f17c5"
+content-hash = "5ac73db46936c11d6a8923b6d69bd2df88a227930a73c52739397152ed52fbfe"

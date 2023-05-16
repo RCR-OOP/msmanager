@@ -1,3 +1,5 @@
+import time
+import pydustry
 import platform
 from versioner import Version
 from vbml import Pattern, Patcher
@@ -21,6 +23,24 @@ def replaces(string: str, replaceble: Dict[str, str]) -> str:
 
 def rich_exception(exception: Exception) -> str:
     return f"[red]{exception.__class__.__name__}:[/] {' '.join(exception.args)}"
+
+# ! ...
+def wait_start_server(
+    server_host: str,
+    port: int=6567,
+    input_port: int=6859,
+    per_second: float=1
+) -> None:
+    server = pydustry.Server(server_host, port, input_port)
+    while True:
+        try:
+            server.get_status(per_second)
+            break
+        except:
+            pass
+
+def is_server_connect_correct(server_host: str, port: int, input_port: int) -> bool:
+    return isinstance(server_host, str) and isinstance(port, int) and isinstance(input_port, int)
 
 # ! Subproccess Functions
 def runner(*args: str) -> Tuple[int, str]:
