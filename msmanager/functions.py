@@ -1,4 +1,3 @@
-import time
 import pydustry
 import platform
 from versioner import Version
@@ -24,7 +23,10 @@ def replaces(string: str, replaceble: Dict[str, str]) -> str:
 def rich_exception(exception: Exception) -> str:
     return f"[red]{exception.__class__.__name__}:[/] {' '.join(exception.args)}"
 
-# ! ...
+def endicext(string: str) -> str:
+    return string + ("[/]" * string.count("]"))
+
+# ! Server Functions
 def wait_start_server(
     server_host: str,
     port: int=6567,
@@ -41,6 +43,9 @@ def wait_start_server(
 
 def is_server_connect_correct(server_host: str, port: int, input_port: int) -> bool:
     return isinstance(server_host, str) and isinstance(port, int) and isinstance(input_port, int)
+
+def ping(host: str, port: int, timeout: int=10) -> pydustry.Status:
+    return pydustry.Server(host, port).get_status(timeout)
 
 # ! Subproccess Functions
 def runner(*args: str) -> Tuple[int, str]:

@@ -3,7 +3,7 @@ from platformdirs import user_config_dir
 
 # ! Metadata
 __name__ = "msmanager"
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __author__ = "RCR"
 __email__ = "semina054@gmail.com"
 __url__ = "https://github.com/RCR-OOP/msmanager"

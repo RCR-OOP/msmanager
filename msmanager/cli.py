@@ -1,11 +1,16 @@
 import os
 import click
-from typing import Iterable
 from rich.console import Console
+from typing import Iterable, Optional
 # > Local Imports
 from .msm import MSManager
-from .functions import rich_exception, is_server_connect_correct, wait_start_server
 from .models import MindustryServerConfig
+from .functions import (
+    rich_exception,
+    is_server_connect_correct,
+    wait_start_server,
+    ping, endicext
+)
 
 # ! Vars
 console = Console()
@@ -22,14 +27,37 @@ msmanager: MSManager = ...
     type=str,
     multiple=True
 )
-def adder(screen_name: str, executable_filepath: str, arguments: Iterable[str]):
+@click.option(
+    "-h", "--host", "host",
+    help="Server connection host.",
+    type=str, default=None, show_default=True
+)
+@click.option(
+    "-p", "--port", "port",
+    help="Server connection port.",
+    type=int, default=None, show_default=True
+)
+@click.option(
+    "-i", "--input-port", "input_port",
+    help="Server input port for telnet connection.",
+    type=int, default=None, show_default=True
+)
+def adder(
+    screen_name: str,
+    executable_filepath: str,
+    arguments: Iterable[str],
+    host: Optional[str],
+    port: Optional[int],
+    input_port: Optional[int]
+):
     try:
         msmanager.add_server_config(
             MindustryServerConfig(
                 screen_name=screen_name,
                 work_dirpath=os.path.dirname(os.path.abspath(executable_filepath)),
                 executable_filepath=os.path.abspath(executable_filepath),
-                arguments=list(arguments)
+                arguments=list(arguments),
+                host=host, port=port, input_port=input_port
             )
         )
         console.print("[green]>[/] Server [bold yellow]added[/]!")
@@ -80,9 +108,9 @@ def lister():
                     "\n\t".join(
                         [
                             f"({idx}) Server [green]{server.screen_name}[/]:",
-                            f"[yellow]EXECUTABLE_FILEPATH[/]: {repr(server.executable_filepath)}",
-                            f"[yellow]ARGUMENTS[/]: {repr(' '.join(server.arguments))}",
-                            f"[yellow]HOST:PORT:INPUT_PORT[/]: [green]{server.host}[/]:{server.port}:{server.input_port}"
+                            f"[yellow]EXECUTABLE_FILEPATH[/]  : {repr(server.executable_filepath)}",
+                            f"[yellow]ARGUMENTS[/]            : {repr(' '.join(server.arguments))}",
+                            f"[yellow]HOST:PORT:INPUT_PORT[/] : [green]{server.host}[/]:{server.port}:{server.input_port}"
                         ]
                     )
                 )
@@ -91,10 +119,37 @@ def lister():
     except Exception as e:
         console.print(rich_exception(e))
 
+@click.command("ping", help="Server status check.")
+@click.argument("host", type=str)
+@click.argument("port", type=int)
+@click.option(
+    "-t", "--timeout", "timeout",
+    help="Maximum response waiting time (in seconds).",
+    type=int, default=10, show_default=True
+)
+def pinger(host: str, port: int, timeout: int):
+    try:
+        status = ping(host, port, timeout)
+        console.print(
+            "\n\t".join(
+                [
+                    f"[green]>[/] Server {endicext(status.name)}:",
+                    f"- [yellow]Players[/] : {status.players} players",
+                    f"- [yellow]Map[/]     : [green]{status.map}[/]",
+                    f"- [yellow]Wave[/]    : {status.wave} wave",
+                    f"- [yellow]Ping[/]    : {round(status.ping)} ms",
+                    f"- [yellow]Version[/] : [green]v{status.version}[/]",
+                    f"- [yellow]Vertype[/] : [green]{status.vertype}[/]"                    
+                ]
+            )
+        )
+    except Exception as e:
+        console.print(rich_exception(e))
+
 # ! Main Group
 @click.group()
 @click.option(
-    "--not-check-environment", "not_check_environment",
+    "-nce", "--not-check-environment", "not_check_environment",
     is_flag=True,
     help="Disables checks for GNU Screen, Java and system support."
 )
@@ -110,6 +165,7 @@ main.add_command(remover)
 main.add_command(starter)
 main.add_command(stoper)
 main.add_command(lister)
+main.add_command(pinger)
 
 # ! Run
 def run():

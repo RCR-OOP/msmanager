@@ -2,6 +2,7 @@ import os
 import screens
 from typing import Optional
 from versioner import Version
+from pydustry import Server, Status
 # * Local Imports
 from .units import CONFIG_PATH
 from .config import MSManagerConfig
@@ -64,3 +65,4 @@ class MSManager:
         else:
             raise ServerNotExistsError(screen_name)
     
+    def ping(self, screen_name: str) -> Status: ...
