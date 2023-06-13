@@ -42,7 +42,10 @@ def wait_start_server(
             pass
 
 def is_server_connect_correct(server_host: str, port: int, input_port: int) -> bool:
-    return isinstance(server_host, str) and isinstance(port, int) and isinstance(input_port, int)
+    return \
+        isinstance(server_host, str) and \
+        isinstance(port, int) and \
+        (isinstance(input_port, int) if (input_port is not None) else True)
 
 def ping(host: str, port: int, timeout: int=10) -> pydustry.Status:
     return pydustry.Server(host, port).get_status(timeout)
@@ -52,7 +55,7 @@ def runner(*args: str) -> Tuple[int, str]:
     return getstatusoutput(" ".join([*args]))
 
 def exists_screen() -> bool:
-    return runner("screen", "-v")[0] == 0
+    return (runner("screen", "-v")[0] == 0) or (runner("screen", "-v")[0] == 1)
 
 def exists_java() -> bool:
     return runner("java", "--version")[0] == 0
