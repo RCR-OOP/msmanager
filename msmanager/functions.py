@@ -21,7 +21,7 @@ def replaces(string: str, replaceble: Dict[str, str]) -> str:
     return string
 
 def rich_exception(exception: Exception) -> str:
-    return f"[red]{exception.__class__.__name__}:[/] {' '.join(exception.args)}"
+    return f"[red]{exception.__class__.__name__}:[/] {' '.join([str(i) for i in exception.args])}"
 
 def endicext(string: str) -> str:
     return string + ("[/]" * string.count("]"))
