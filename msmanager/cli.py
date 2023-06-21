@@ -3,6 +3,10 @@ import click
 from rich.console import Console
 from typing import Iterable, Optional
 # > Local Imports
+from .units import (
+    __version__ as prog_version,
+    __title__ as prog_name
+)
 from .msm import MSManager
 from .models import MindustryServerConfig
 from .functions import (
@@ -77,7 +81,11 @@ def remover(screen_name: str):
 # ? Start Command
 @click.command("start", help="Run the server.")
 @click.argument("screen_name", type=str)
-@click.option("-w", "--wait", "wait", is_flag=True, help="Waiting for the server to start up.")
+@click.option(
+    "-w", "--wait", "wait",
+    help="Waiting for the server to start up.",
+    is_flag=True
+)
 def starter(screen_name: str, wait: bool):
     try:
         msmanager.start_server(screen_name)
@@ -100,20 +108,36 @@ def stoper(screen_name: str):
 
 # ? List Command
 @click.command("list", help="List of servers in the config.")
-def lister():
+@click.option(
+    "--pinging", "pinging",
+    help="Whether to do a ping to check.",
+    is_flag=True, default=False
+)
+@click.option(
+    "-t", "--timeout", "timeout",
+    help="Maximum response waiting time (in seconds).",
+    type=int, default=10, show_default=True
+)
+def lister(pinging: bool, timeout: int):
     try:
         if len(msmanager.config.config.servers) != 0:
             for idx, server in enumerate(msmanager.config.config.servers):
-                console.print(
-                    "\n\t".join(
-                        [
-                            f"({idx}) Server [green]{server.screen_name}[/]:",
-                            f"[yellow]EXECUTABLE_FILEPATH[/]  : {repr(server.executable_filepath)}",
-                            f"[yellow]ARGUMENTS[/]            : {repr(' '.join(server.arguments))}",
-                            f"[yellow]HOST:PORT:INPUT_PORT[/] : [green]{server.host}[/]:{server.port}:{server.input_port}"
-                        ]
-                    )
-                )
+                lines = [
+                    f"({idx}) Server {repr(server.screen_name)}:",
+                    f"[magenta]Executable Filepath[/] : {repr(server.executable_filepath)}",
+                    f"[magenta]Arguments[/]           : {repr(server.arguments)}",
+                    f"[magenta]Host[/]                : [green]{server.host}[/]",
+                    f"[magenta]Port[/]                : [cyan]{server.port}[/]",
+                    f"[magenta]Input Port[/]          : [cyan]{server.input_port}[/]"
+                ]
+                if pinging:
+                    try:
+                        ping(server.host, server.port, timeout)
+                        started = True
+                    except:
+                        started = False
+                    lines.append(f"[magenta]Started[/]             : {repr(started)}")
+                console.print("\n\t".join(lines))
         else:
             console.print("[green]>[/] The list of servers is [bold yellow]empty[/]!")
     except Exception as e:
@@ -133,13 +157,13 @@ def pinger(host: str, port: int, timeout: int):
         console.print(
             "\n\t".join(
                 [
-                    f"[green]>[/] Server {endicext(status.name)}:",
-                    f"- [yellow]Players[/] : {status.players} players",
-                    f"- [yellow]Map[/]     : [green]{status.map}[/]",
-                    f"- [yellow]Wave[/]    : {status.wave} wave",
-                    f"- [yellow]Ping[/]    : {round(status.ping)} ms",
-                    f"- [yellow]Version[/] : [green]v{status.version}[/]",
-                    f"- [yellow]Vertype[/] : [green]{status.vertype}[/]"                    
+                    f"[green]>[/] Server '{endicext(status.name)}':",
+                    f"- [magenta]Players[/] : {status.players} players",
+                    f"- [magenta]Map[/]     : {repr(status.map)}",
+                    f"- [magenta]Wave[/]    : {status.wave} wave",
+                    f"- [magenta]Ping[/]    : {round(status.ping)} ms",
+                    f"- [magenta]Version[/] : {repr(status.version)}",
+                    f"- [magenta]Vertype[/] : {repr(status.vertype)}"
                 ]
             )
         )
@@ -153,11 +177,13 @@ def pinger(host: str, port: int, timeout: int):
     is_flag=True,
     help="Disables checks for GNU Screen, Java and system support."
 )
+@click.version_option(
+    version=prog_version,
+    prog_name=prog_name
+)
 def main(not_check_environment: bool):
     global msmanager
-    msmanager = MSManager(
-        check_environment=(not not_check_environment)
-    )
+    msmanager = MSManager(check_environment=(not not_check_environment))
 
 # ! Add in Group
 main.add_command(adder)

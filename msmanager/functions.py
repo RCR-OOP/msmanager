@@ -3,7 +3,7 @@ import platform
 from versioner import Version
 from vbml import Pattern, Patcher
 from subprocess import getstatusoutput
-from typing import Tuple, Dict, Any, Iterable
+from typing import Tuple, Dict, Any, Iterable, Optional
 # * Local Imports
 from .types import DefaultVersioner, DefaultVBMLPacther
 from .units import SUPPORT_PLATFORMS, COLORS_STRINGS_REPLACEBLE
@@ -41,11 +41,11 @@ def wait_start_server(
         except:
             pass
 
-def is_server_connect_correct(server_host: str, port: int, input_port: int) -> bool:
+def is_server_connect_correct(server_host: str, port: int, input_port: Optional[int]) -> bool:
     return \
         isinstance(server_host, str) and \
         isinstance(port, int) and \
-        (isinstance(input_port, int) if (input_port is not None) else True)
+        (isinstance(input_port, int) or (input_port is not None))
 
 def ping(host: str, port: int, timeout: int=10) -> pydustry.Status:
     return pydustry.Server(host, port).get_status(timeout)
