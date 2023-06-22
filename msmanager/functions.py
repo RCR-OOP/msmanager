@@ -76,6 +76,17 @@ def parse_vbml_linear(lines: Iterable[str], pattern: str, *, pacther: Patcher=De
         except: pass
     raise VBMLParseError()
 
+def parse_vbml_patterns(text: str, patterns: Iterable[str], *, pacther: Patcher=DefaultVBMLPacther) -> Dict[str, Any]:
+    for pattern in patterns:
+        try: return parse_vbml(text, pattern)
+        except: pass
+    raise VBMLParseError()
+
+def parse_connect_data(text: str):
+    data = {"host": None, "port": 6567}
+    data.update(parse_vbml_patterns(text, ["<host>:<port:int>", "<host>"]))
+    return data
+
 def get_java_version() -> Version:
     if exists_java():
         data = parse_vbml(runner("java", "--version")[1].split("\n")[0], "<t1> <version> <t2>")

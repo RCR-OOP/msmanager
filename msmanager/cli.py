@@ -13,7 +13,7 @@ from .functions import (
     rich_exception,
     is_server_connect_correct,
     wait_start_server,
-    ping, endicext
+    ping, endicext, parse_connect_data
 )
 
 # ! Vars
@@ -144,16 +144,16 @@ def lister(pinging: bool, timeout: int):
         console.print(rich_exception(e))
 
 @click.command("ping", help="Server status check.")
-@click.argument("host", type=str)
-@click.argument("port", type=int)
+@click.argument("connect", type=str)
 @click.option(
     "-t", "--timeout", "timeout",
     help="Maximum response waiting time (in seconds).",
     type=int, default=10, show_default=True
 )
-def pinger(host: str, port: int, timeout: int):
+def pinger(connect: str, timeout: int):
     try:
-        status = ping(host, port, timeout)
+        connect_data = parse_connect_data(connect)
+        status = ping(connect_data["host"], connect_data["port"], timeout)
         console.print(
             "\n\t".join(
                 [
