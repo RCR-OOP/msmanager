@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "msmanager"
-version = "0.2.1"
+version = "0.2.2.dev1"
 description = "Manager for managing Mindustry servers."
 authors = ["Romanin <semina054@gmail.com>"]
 license = "MIT"
