@@ -15,7 +15,9 @@ from .functions import (
     wait_start_server,
     ping, endicext, parse_connect_data
 )
-from .exceptions import VBMLParseError, IncorrectConnectionDataError
+from .exceptions import (
+    VBMLParseError, IncorrectConnectionDataError
+)
 
 # ! Vars
 console = Console()
