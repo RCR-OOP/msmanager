@@ -58,9 +58,18 @@ class ServerIsStartedError(Exception):
         )
 
 class ServerIsStoppedError(Exception):
-    """..."""
+    """Indicates that the server is already stopped."""
     def __init__(self, name: str) -> None:
-        """..."""
+        """Called if the server is already stopped."""
         self.args = (
             f"The {repr(name)} server is stopped as it is."
+        )
+
+# ! CLI Exception
+class IncorrectConnectionDataError(Exception):
+    """Indicates incorrect data to connect to the server."""
+    def __init__(self, connect_data: str) -> None:
+        """Called if the connection data is incorrect."""
+        self.args = (
+            f"The data to connect to the server is not correct ({connect_data})."
         )

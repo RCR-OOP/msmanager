@@ -15,6 +15,7 @@ from .functions import (
     wait_start_server,
     ping, endicext, parse_connect_data
 )
+from .exceptions import VBMLParseError, IncorrectConnectionDataError
 
 # ! Vars
 console = Console()
@@ -152,7 +153,13 @@ def lister(pinging: bool, timeout: int):
 )
 def pinger(connect: str, timeout: int):
     try:
-        connect_data = parse_connect_data(connect)
+        try:
+            connect_data = parse_connect_data(connect)
+        except VBMLParseError:
+            if (server_config:=msmanager.get_server_config(connect)) is not None:
+                connect_data = {"host": server_config.host, "port": server_config.port}
+            else:
+                raise IncorrectConnectionDataError(connect)
         status = ping(connect_data["host"], connect_data["port"], timeout)
         console.print(
             "\n\t".join(
