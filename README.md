@@ -3,7 +3,7 @@
 Manager for managing Mindustry servers.
 ## Install
 ```shell
-python3 -m pip install --upgrade msmanager
+python3 -m pip install -U msmanager
 ```
 ## Usage
 ```
@@ -12,6 +12,7 @@ Usage: python -m msmanager [OPTIONS] COMMAND [ARGS]...
 Options:
   -nce, --not-check-environment  Disables checks for GNU Screen, Java and
                                  system support.
+  -d, --debug                    Enables debug mode of operation.
   --version                      Show the version and exit.
   --help                         Show this message and exit.
 

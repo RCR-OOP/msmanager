@@ -56,7 +56,7 @@ def runner(*args: str) -> Tuple[int, str]:
 
 def exists_screen() -> bool:
     out = runner("screen", "-v")[0]
-    return (out[0] == 0) or (out[0] == 1)
+    return (out == 0) or (out == 1)
 
 def exists_java() -> bool:
     return runner("java", "--version")[0] == 0

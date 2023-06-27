@@ -1,7 +1,7 @@
 import os
 import click
 from rich.console import Console
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Callable, Any
 # > Local Imports
 from .units import (
     __version__ as prog_version,
@@ -21,7 +21,25 @@ from .exceptions import (
 
 # ! Vars
 console = Console()
+debag_mode = False
 msmanager: MSManager = ...
+
+# ! Functions
+def printexcept(e: Exception):
+    if debag_mode:
+        console.print_exception(word_wrap=True, show_locals=True)
+    else:
+        console.print(rich_exception(e))
+
+def hand_exception():
+    def hand_exception_wrapper(func: Callable[..., Any]):
+        def hand_exception_wrapped(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                printexcept(e)
+        return hand_exception_wrapped
+    return hand_exception_wrapper
 
 # ! Commands
 # ? Add Command
@@ -49,6 +67,7 @@ msmanager: MSManager = ...
     help="Server input port for telnet connection.",
     type=int, default=None, show_default=True
 )
+@hand_exception()
 def adder(
     screen_name: str,
     executable_filepath: str,
@@ -57,29 +76,24 @@ def adder(
     port: Optional[int],
     input_port: Optional[int]
 ):
-    try:
-        msmanager.add_server_config(
-            MindustryServerConfig(
-                screen_name=screen_name,
-                work_dirpath=os.path.dirname(os.path.abspath(executable_filepath)),
-                executable_filepath=os.path.abspath(executable_filepath),
-                arguments=list(arguments),
-                host=host, port=port, input_port=input_port
-            )
+    msmanager.add_server_config(
+        MindustryServerConfig(
+            screen_name=screen_name,
+            work_dirpath=os.path.dirname(os.path.abspath(executable_filepath)),
+            executable_filepath=os.path.abspath(executable_filepath),
+            arguments=list(arguments),
+            host=host, port=port, input_port=input_port
         )
-        console.print("[green]>[/] Server [bold yellow]added[/]!")
-    except Exception as e:
-        console.print(rich_exception(e))
+    )
+    console.print("[green]>[/] Server [bold yellow]added[/]!")
 
 # ? Remove Command
 @click.command("remove", help="Remove the server from the config.")
 @click.argument("screen_name", type=str)
+@hand_exception()
 def remover(screen_name: str):
-    try:
-        msmanager.remove_server_config(screen_name)
-        console.print("[green]>[/] Server [bold yellow]removed[/]!")
-    except Exception as e:
-        console.print(rich_exception(e))
+    msmanager.remove_server_config(screen_name)
+    console.print("[green]>[/] Server [bold yellow]removed[/]!")
 
 # ? Start Command
 @click.command("start", help="Run the server.")
@@ -89,25 +103,21 @@ def remover(screen_name: str):
     help="Waiting for the server to start up.",
     is_flag=True
 )
+@hand_exception()
 def starter(screen_name: str, wait: bool):
-    try:
-        msmanager.start_server(screen_name)
-        if (server_config:=msmanager.get_server_config(screen_name)) is not None:
-            if is_server_connect_correct(server_config.host, server_config.port, server_config.input_port) and wait:
-                wait_start_server(server_config.host, server_config.port, server_config.input_port)
-        console.print("[green]>[/] Server [bold yellow]started[/]!")
-    except Exception as e:
-        console.print(rich_exception(e))
+    msmanager.start_server(screen_name)
+    if (server_config:=msmanager.get_server_config(screen_name)) is not None:
+        if is_server_connect_correct(server_config.host, server_config.port, server_config.input_port) and wait:
+            wait_start_server(server_config.host, server_config.port, server_config.input_port)
+    console.print("[green]>[/] Server [bold yellow]started[/]!")
 
 # ? Stop Command
 @click.command("stop", help="Stop the server.")
 @click.argument("screen_name", type=str)
+@hand_exception()
 def stoper(screen_name: str):
-    try:
-        msmanager.stop_server(screen_name)
-        console.print("[green]>[/] Server [bold yellow]stoped[/]!")
-    except Exception as e:
-        console.print(rich_exception(e))
+    msmanager.stop_server(screen_name)
+    console.print("[green]>[/] Server [bold yellow]stoped[/]!")
 
 # ? List Command
 @click.command("list", help="List of servers in the config.")
@@ -121,6 +131,7 @@ def stoper(screen_name: str):
     help="Maximum response waiting time (in seconds).",
     type=int, default=10, show_default=True
 )
+@hand_exception()
 def lister(pinging: bool, timeout: int):
     try:
         if len(msmanager.config.config.servers) != 0:
@@ -153,46 +164,52 @@ def lister(pinging: bool, timeout: int):
     help="Maximum response waiting time (in seconds).",
     type=int, default=10, show_default=True
 )
+@hand_exception()
 def pinger(connect: str, timeout: int):
-    try:
+    if (server_config:=msmanager.get_server_config(connect)) is not None:
+        connect_data = {"host": server_config.host, "port": server_config.port}
+    else:
         try:
             connect_data = parse_connect_data(connect)
         except VBMLParseError:
-            if (server_config:=msmanager.get_server_config(connect)) is not None:
-                connect_data = {"host": server_config.host, "port": server_config.port}
-            else:
-                raise IncorrectConnectionDataError(connect)
-        status = ping(connect_data["host"], connect_data["port"], timeout)
-        console.print(
-            "\n\t".join(
-                [
-                    f"[green]>[/] Server '{endicext(status.name)}':",
-                    f"- [magenta]Players[/] : {status.players} players",
-                    f"- [magenta]Map[/]     : {repr(status.map)}",
-                    f"- [magenta]Wave[/]    : {status.wave} wave",
-                    f"- [magenta]Ping[/]    : {round(status.ping)} ms",
-                    f"- [magenta]Version[/] : {repr(status.version)}",
-                    f"- [magenta]Vertype[/] : {repr(status.vertype)}"
-                ]
-            )
+            raise IncorrectConnectionDataError(connect)
+    status = ping(connect_data["host"], connect_data["port"], timeout)
+    console.print(
+        "\n\t".join(
+            [
+                f"[green]>[/] Server {endicext(status.name)}:",
+                f"- [magenta]Players[/] : {status.players} players",
+                f"- [magenta]Map[/]     : {repr(status.map)}",
+                f"- [magenta]Wave[/]    : {status.wave} wave",
+                f"- [magenta]Ping[/]    : {round(status.ping)} ms",
+                f"- [magenta]Version[/] : {repr(status.version)}",
+                f"- [magenta]Vertype[/] : {repr(status.vertype)}"
+            ]
         )
-    except Exception as e:
-        console.print(rich_exception(e))
+    )
 
 # ! Main Group
 @click.group()
 @click.option(
     "-nce", "--not-check-environment", "not_check_environment",
-    is_flag=True,
-    help="Disables checks for GNU Screen, Java and system support."
+    help="Disables checks for GNU Screen, Java and system support.",
+    is_flag=True
+)
+@click.option(
+    "--debug", "-d", "debug",
+    help="Enables debug mode of operation.",
+    is_flag=True
 )
 @click.version_option(
     version=prog_version,
     prog_name=prog_name
 )
-def main(not_check_environment: bool):
-    global msmanager
+@hand_exception()
+def main(not_check_environment: bool, debug: bool):
+    global msmanager, debag_mode
+    
     msmanager = MSManager(check_environment=(not not_check_environment))
+    debag_mode = debug
 
 # ! Add in Group
 main.add_command(adder)
