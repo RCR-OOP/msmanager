@@ -97,27 +97,31 @@ def remover(screen_name: str):
 
 # ? Start Command
 @click.command("start", help="Run the server.")
-@click.argument("screen_name", type=str)
+@click.argument("scn", type=str)
 @click.option(
     "-w", "--wait", "wait",
     help="Waiting for the server to start up.",
     is_flag=True
 )
 @hand_exception()
-def starter(screen_name: str, wait: bool):
-    msmanager.start_server(screen_name)
-    if (server_config:=msmanager.get_server_config(screen_name)) is not None:
-        if is_server_connect_correct(server_config.host, server_config.port, server_config.input_port) and wait:
-            wait_start_server(server_config.host, server_config.port, server_config.input_port)
-    console.print("[green]>[/] Server [bold yellow]started[/]!")
+def starter(scn: str, wait: bool):
+    screens_names = scn.split(",")
+    for screen_name in screens_names:
+        msmanager.start_server(screen_name)
+        if (server_config:=msmanager.get_server_config(screen_name)) is not None:
+            if is_server_connect_correct(server_config.host, server_config.port, server_config.input_port) and wait:
+                wait_start_server(server_config.host, server_config.port, server_config.input_port)
+        console.print(f"[green]>[/green] Server [green]{screen_name}[/green] is [bold yellow]started[/bold yellow]!")
 
 # ? Stop Command
 @click.command("stop", help="Stop the server.")
-@click.argument("screen_name", type=str)
+@click.argument("scn", type=str)
 @hand_exception()
-def stoper(screen_name: str):
-    msmanager.stop_server(screen_name)
-    console.print("[green]>[/] Server [bold yellow]stoped[/]!")
+def stoper(scn: str):
+    screens_names = scn.split(",")
+    for screen_name in screens_names:
+        msmanager.stop_server(screen_name)
+        console.print(f"[green]>[/green] Server [green]{screen_name}[/green] is [bold yellow]stoped[/bold yellow]!")
 
 # ? List Command
 @click.command("list", help="List of servers in the config.")
