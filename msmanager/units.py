@@ -4,7 +4,7 @@ from platformdirs import user_config_dir
 # ! Metadata
 __name__ = "msmanager"
 __title__ = "MSManager (Mindustry Servers Manager)"
-__version__ = "0.2.5"
+__version__ = "0.2.5.post1"
 __author__ = "RCR"
 __email__ = "semina054@gmail.com"
 __url__ = "https://github.com/RCR-OOP/msmanager"

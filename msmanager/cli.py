@@ -212,8 +212,9 @@ def pinger(connect: str, timeout: int):
 def main(not_check_environment: bool, debug: bool):
     global msmanager, debag_mode
     
-    msmanager = MSManager(check_environment=(not not_check_environment))
     debag_mode = debug
+    
+    msmanager = MSManager(check_environment=(not not_check_environment))
 
 # ! Add in Group
 main.add_command(adder)
