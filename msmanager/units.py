@@ -2,9 +2,9 @@ import os
 from platformdirs import user_config_dir
 
 # ! Metadata
-__name__ = "msmanager"
+__prog_name__ = "msmanager"
 __title__ = "MSManager (Mindustry Servers Manager)"
-__version__ = "0.2.5.post1"
+__version__ = "0.3.0"
 __author__ = "RCR"
 __email__ = "semina054@gmail.com"
 __url__ = "https://github.com/RCR-OOP/msmanager"
@@ -13,7 +13,7 @@ __url__ = "https://github.com/RCR-OOP/msmanager"
 SUPPORT_PLATFORMS = [
     "windows-amd64", "windows-x86_64", "linux-x86_64"
 ]
-CONFIG_DIRPATH = user_config_dir(__name__, __author__)
+CONFIG_DIRPATH = user_config_dir(__prog_name__, __author__)
 CONFIG_PATH = os.path.join(CONFIG_DIRPATH, "msmanager_config.json")
 
 # ! For Parsing

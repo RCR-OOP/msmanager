@@ -1,6 +1,7 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional, Literal, Dict, List, Any
 
+# ! MSManager Models
 class MindustryServerConfig(BaseModel):
     screen_name: str
     work_dirpath: str
@@ -12,3 +13,8 @@ class MindustryServerConfig(BaseModel):
 
 class MainConfig(BaseModel):
     servers: List[MindustryServerConfig] = []
+
+# ! MSManager Json Output Models
+class JsonOutput(BaseModel):
+    status: Literal['success', 'error']
+    data: Dict[str, Any]={}
