@@ -20,11 +20,12 @@ Options:
   --help                    Show this message and exit.
 
 Commands:
-  add      Add a server to the config.
-  list     List of servers in the config.
-  ping     Server status check.
-  remove   Remove the server from the config.
-  restart  Restart the server(s).
-  start    Run the server(s).
-  stop     Stop the server(s).
+  add       Add a server to the config.
+  list      List of servers in the config.
+  ping      Server status check.
+  remove    Remove the server from the config.
+  restart   Restart the server(s).
+  start     Run the server(s).
+  stop      Stop the server(s).
+  watchdog  The active process of monitoring servers, which, if the...
 ```
