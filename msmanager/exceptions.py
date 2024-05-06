@@ -23,14 +23,18 @@ class JavaNotFound(Exception):
     """Indicates a lack of `Java`."""
     def __init__(self) -> None:
         """Called if the `Java` package environment could not be found."""
-        self.args = ("The `Java` environment package is not installed.",)
+        self.args = (
+            "The `Java` environment package is not installed.",
+        )
 
 # ! Parsing Error
 class VBMLParseError(Exception):
     """Indicates a parsing error."""
     def __init__(self) -> None:
         """Calls if `vbml` was unable to finish parsing."""
-        self.args = ("There was an error parsing through vbml.",)
+        self.args = (
+            "There was an error parsing through vbml.",
+        )
 
 
 # ! Config Exceptions
@@ -38,14 +42,16 @@ class ServerExistsError(Exception):
     """Indicates that there is a server with this name."""
     def __init__(self, name: str) -> None:
         """Called if a server with this name is already present in the config."""
-        self.args = (f"A server named {repr(name)} already exists in the config.",)
+        self.args = (
+            f"A server named {repr(name)} already exists in the config.",
+        )
 
 class ServerNotExistsError(Exception):
     """Indicates that north does not exist in the config."""
     def __init__(self, name: str) -> None:
         """Called if a server with this name does not exist in the config."""
         self.args = (
-            f"A server named {repr(name)} does not exist in the config."
+            f"A server named {repr(name)} does not exist in the config.",
         )
 
 # ! Server Actions Exceptions
@@ -54,7 +60,7 @@ class ServerIsStartedError(Exception):
     def __init__(self, name: str) -> None:
         """Called when attempting to start an already running server."""
         self.args = (
-            f"A server named {repr(name)} is already up and running."
+            f"A server named {repr(name)} is already up and running.",
         )
 
 class ServerIsStoppedError(Exception):
@@ -62,7 +68,7 @@ class ServerIsStoppedError(Exception):
     def __init__(self, name: str) -> None:
         """Called if the server is already stopped."""
         self.args = (
-            f"The {repr(name)} server is stopped as it is."
+            f"The {repr(name)} server is stopped as it is.",
         )
 
 # ! CLI Exception
@@ -71,5 +77,5 @@ class IncorrectConnectionDataError(Exception):
     def __init__(self, connect_data: str) -> None:
         """Called if the connection data is incorrect."""
         self.args = (
-            f"The data to connect to the server is not correct ({connect_data})."
+            f"The data to connect to the server is not correct ({connect_data}).",
         )

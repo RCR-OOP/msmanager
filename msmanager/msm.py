@@ -24,10 +24,17 @@ class MSManager:
             checking_environment()
     
     # ? Config Managemant
-    def add_server_config(self, server: MindustryServerConfig) -> None: return self.config.add_server(server)
-    def get_server_config(self, screen_name: str) -> Optional[MindustryServerConfig]: return self.config.get_server(screen_name)
-    def exists_server_config(self, screen_name: str) -> bool: return self.config.exists_server(screen_name)
-    def remove_server_config(self, screen_name: str) -> None: return self.config.remove_server(screen_name)
+    def add_server_config(self, server: MindustryServerConfig) -> None:
+        return self.config.add_server(server)
+    
+    def get_server_config(self, screen_name: str) -> Optional[MindustryServerConfig]:
+        return self.config.get_server(screen_name)
+    
+    def exists_server_config(self, screen_name: str) -> bool:
+        return self.config.exists_server(screen_name)
+    
+    def remove_server_config(self, screen_name: str) -> None:
+        return self.config.remove_server(screen_name)
     
     # ? Server Managemant
     def check_server_version(self, screen_name: str) -> Version:
@@ -62,3 +69,10 @@ class MSManager:
                 raise ServerIsStoppedError(screen_name)
         else:
             raise ServerNotExistsError(screen_name)
+    
+    def restart_server(self, screen_name: str) -> None:
+        try:
+            self.stop_server(screen_name)
+        except:
+            pass
+        self.start_server(screen_name)

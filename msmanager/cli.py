@@ -1,8 +1,9 @@
 import os
+import time
 import json
 import click
 from rich.console import Console
-from typing import Literal, Optional, Union, Iterable, Callable, Dict, Any
+from typing import Literal, Optional, Union, Iterable, Callable, List, Dict, Any
 # > Local Imports
 from .msm import MSManager
 from .units import (
@@ -17,7 +18,7 @@ from .functions import (
     rich_exception,
     is_server_connect_correct,
     wait_start_server,
-    ping, endicext, parse_connect_data
+    ping, pingok, endicext, parse_connect_data
 )
 from .exceptions import (
     VBMLParseError, IncorrectConnectionDataError
@@ -139,7 +140,7 @@ def starter(scn: str, wait: bool):
     screens_names = scn.split(",")
     for screen_name in screens_names:
         msmanager.start_server(screen_name)
-        if (server_config:=msmanager.get_server_config(screen_name)) is not None:
+        if (server_config := msmanager.get_server_config(screen_name)) is not None:
             if is_server_connect_correct(server_config.host, server_config.port, server_config.input_port) and wait:
                 wait_start_server(server_config.host, server_config.port, server_config.input_port)
         if oformat == 'text':
@@ -160,6 +161,7 @@ def stoper(scn: str):
     if oformat == 'json':
         printjson(JsonOutput(status='success'))
 
+# ? Restart Command
 @click.command("restart", help="Restart the server(s).")
 @click.argument("scn", type=str)
 @click.option(
@@ -238,6 +240,7 @@ def lister(pinging: bool, timeout: int):
     if oformat == 'json':
         printjson(output)
 
+# ? Ping Command
 @click.command("ping", help="Server status check.")
 @click.argument("connect", type=str)
 @click.option(
@@ -297,6 +300,48 @@ def pinger(connect: str, timeout: int):
             )
         )
 
+# ? Watchdog
+@click.command("watchdog", help="The active process of monitoring servers, which, if the server fails, restarts it.")
+@click.argument("scn", type=str)
+@click.option(
+    "--localhost", "-l", "localhost", 
+    help="The ping will take place not by the host settings, but by the local IP.",
+    default=False, is_flag=True
+)
+@click.option(
+    "--start-delay", "-d", "start_delay",
+    help="The delay before watchdog starts (in secounds).",
+    type=click.INT, default=120, show_default=True
+)
+@hand_exception()
+def watchdog(scn: str, localhost: bool, start_delay: int):
+    screens_names = scn.split(",")
+    servers_config: List[MindustryServerConfig] = []
+    for screen_name in screens_names:
+        if (server_config := msmanager.get_server_config(screen_name)) is not None:
+            if (server_config.host is not None) or (server_config.port is not None):
+                servers_config.append(server_config)
+                console.print(f"[green]>[/green] The server was found in the config: {repr(screen_name)}")
+            else:
+                console.print(f"[red]>[/red] There are no settings for ping: {repr(screen_name)}")
+        else:
+            console.print(f"[red]>[/red] One of the listed servers was not found: {repr(screen_name)}")
+    console.print(f"[green]>[/green] Waiting {start_delay} second(s) before starting the watchdog operation.")
+    time.sleep(start_delay)
+    console.print("[green]>[/green] Watchdog is started!")
+    try:
+        while True:
+            for server_config in servers_config:
+                server_host = "localhost" if localhost else server_config.host
+                if not pingok(server_host, server_config.port):
+                    console.print(f"[red]>[/red] Restarting server: {repr(server_config.screen_name)}")
+                    msmanager.restart_server(server_config.screen_name)
+                    wait_start_server(server_config.host, server_config.port, server_config.input_port)
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        pass
+    console.print("[green]>[/green] Watchdog is shutdown!")
+
 # ! Main Group
 @click.group()
 @click.option(
@@ -336,6 +381,7 @@ main.add_command(stoper)
 main.add_command(restarter)
 main.add_command(lister)
 main.add_command(pinger)
+main.add_command(watchdog)
 
 # ! Run
 def run():

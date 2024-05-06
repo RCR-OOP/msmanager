@@ -50,6 +50,14 @@ def is_server_connect_correct(server_host: str, port: int, input_port: Optional[
 def ping(host: str, port: int, timeout: int=10) -> pydustry.Status:
     return pydustry.Server(host, port).get_status(timeout)
 
+def pingok(host: str, port: int, timeout: int=10) -> pydustry.Status:
+    try:
+        pydustry.Server(host, port).get_status(timeout)
+        return True
+    except:
+        pass
+    return False
+
 # ! Subproccess Functions
 def runner(*args: str) -> Tuple[int, str]:
     return getstatusoutput(" ".join([*args]))
