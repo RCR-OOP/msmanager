@@ -1,3 +1,4 @@
+import re
 import pydustry
 import platform
 from versioner import Version
@@ -6,7 +7,7 @@ from subprocess import getstatusoutput
 from typing import Tuple, Dict, Any, Iterable, Optional
 # * Local Imports
 from .types import DefaultVersioner, DefaultVBMLPacther
-from .units import SUPPORT_PLATFORMS, COLORS_STRINGS_REPLACEBLE
+from .units import SUPPORT_PLATFORMS, COLOR_PATTERN
 from .exceptions import (
     VBMLParseError, 
     PlatformSupportError,
@@ -50,7 +51,7 @@ def is_server_connect_correct(server_host: str, port: int, input_port: Optional[
 def ping(host: str, port: int, timeout: int=10) -> pydustry.Status:
     return pydustry.Server(host, port).get_status(timeout)
 
-def pingok(host: str, port: int, timeout: int=10) -> pydustry.Status:
+def pingok(host: str, port: int, timeout: int=10) -> bool:
     try:
         pydustry.Server(host, port).get_status(timeout)
         return True
@@ -71,7 +72,7 @@ def exists_java() -> bool:
 
 # ! Parse Functions
 def remove_color(text: str) -> str:
-    return replaces(text, COLORS_STRINGS_REPLACEBLE)
+    return re.sub(COLOR_PATTERN, "", text)
 
 def parse_vbml(text: str, pattern: str, *, pacther: Patcher=DefaultVBMLPacther) -> Dict[str, Any]:
     data = pacther.check(Pattern(pattern), text)

@@ -2,40 +2,56 @@ import os
 import time
 import json
 import click
+import datetime
 from rich.console import Console
 from typing import Literal, Optional, Union, Iterable, Callable, List, Dict, Any
 # > Local Imports
 from .msm import MSManager
 from .units import (
     __title__ as prog_name,
-    __version__ as prog_version
+    __version__ as prog_version,
+    ERRORLOG_DIRPATH
 )
 from .models import (
     MindustryServerConfig,
     JsonOutput
 )
 from .functions import (
+    remove_color,
     rich_exception,
     is_server_connect_correct,
     wait_start_server,
-    ping, pingok, endicext, parse_connect_data
+    ping, pingok,
+    endicext, parse_connect_data
 )
 from .exceptions import (
-    VBMLParseError, IncorrectConnectionDataError
+    VBMLParseError, IncorrectConnectionDataError,
+    ServerIsStoppedError, ServerIsStartedError
 )
 
 # ! Vars
 console = Console()
-debag_mode = False
+debug_mode = False
+verbose_mode = False
 msmanager: MSManager = ...
 oformat: Literal['text', 'json'] = 'text'
 
 # ! Functions
-def printexcept(e: Exception):
-    if debag_mode:
+def print_exception(e: Exception) -> None:
+    if debug_mode:
         console.print_exception(word_wrap=True, show_locals=True)
     else:
         console.print(rich_exception(e))
+
+def save_print_exception() -> None:
+    cdt = datetime.datetime.now()
+    with console.capture() as cap:
+        console.print_exception(word_wrap=True, show_locals=True)
+    text = remove_color(cap.get())
+    with open(os.path.join(ERRORLOG_DIRPATH, "last.log"), "w") as logfile:
+        logfile.write(text)
+    with open(os.path.join(ERRORLOG_DIRPATH, f"{round(cdt.timestamp())}.log"), "w") as logfile:
+        logfile.write(text)
 
 def hand_exception():
     def hand_exception_wrapper(func: Callable[..., Any]):
@@ -44,7 +60,7 @@ def hand_exception():
                 return func(*args, **kwargs)
             except Exception as e:
                 if oformat == 'text':
-                    printexcept(e)
+                    print_exception(e)
                 elif oformat == 'json':
                     printjson(
                         JsonOutput(
@@ -182,7 +198,7 @@ def restarter(scn: str, wait: bool):
             if is_server_connect_correct(server_config.host, server_config.port, server_config.input_port) and wait:
                 wait_start_server(server_config.host, server_config.port, server_config.input_port)
         if oformat == 'text':
-            console.print(f"[green]>[/green] Server [green]{screen_name}[/green] is [bold yellow]started[/bold yellow]!")
+            console.print(f"Server [green]{screen_name}[/green] is [bold yellow]started[/bold yellow]!")
     if oformat == 'json':
         printjson(JsonOutput(status='success'))
 
@@ -311,10 +327,32 @@ def pinger(connect: str, timeout: int):
 @click.option(
     "--start-delay", "-d", "start_delay",
     help="The delay before watchdog starts (in secounds).",
-    type=click.INT, default=120, show_default=True
+    type=click.INT, default=60, show_default=True
+)
+@click.option(
+    "--check-timeout", "-ct", "check_timeout",
+    help="The delay between process checks (in secounds).",
+    type=click.INT, default=1, show_default=True
+)
+@click.option(
+    "--checks", "-c", "checks",
+    help="How many times to check one server.",
+    type=click.INT, default=3, show_default=True
+)
+@click.option(
+    "--all-timeout", "-at", "all_timeout",
+    help="Runs a check of all servers once in a while (in secounds).",
+    type=click.INT, default=600, show_default=True
 )
 @hand_exception()
-def watchdog(scn: str, localhost: bool, start_delay: int):
+def watchdog(
+    scn: str,
+    localhost: bool,
+    start_delay: int,
+    check_timeout: int,
+    checks: int,
+    all_timeout: int
+):
     screens_names = scn.split(",")
     servers_config: List[MindustryServerConfig] = []
     for screen_name in screens_names:
@@ -332,12 +370,36 @@ def watchdog(scn: str, localhost: bool, start_delay: int):
     try:
         while True:
             for server_config in servers_config:
-                server_host = "localhost" if localhost else server_config.host
-                if not pingok(server_host, server_config.port):
-                    console.print(f"[red]>[/red] Restarting server: {repr(server_config.screen_name)}")
-                    msmanager.restart_server(server_config.screen_name)
-                    wait_start_server(server_config.host, server_config.port, server_config.input_port)
-            time.sleep(0.1)
+                oks, server_host = 0, "localhost" if localhost else server_config.host
+                if verbose_mode:
+                    console.print(f"[yellow]>[/yellow] Checking: {repr(server_config.screen_name)}")
+                for _ in range(checks):
+                    if pingok(server_host, server_config.port):
+                        oks += 1
+                        if verbose_mode:
+                            console.print(f"[yellow]>[/yellow] Checked: [green]ON[/green]")
+                    else:
+                        if verbose_mode:
+                            console.print(f"[yellow]>[/yellow] Checked: [red]OFF[/red]")
+                    time.sleep(check_timeout)
+                if oks == 0:
+                    ok = False
+                    while not ok:
+                        console.print(f"[red]>[/red] Attempt to restart the server: {repr(server_config.screen_name)}")
+                        try:
+                            msmanager.stop_server(server_config.screen_name)
+                        except ServerIsStoppedError:
+                            pass
+                        try:
+                            msmanager.start_server(server_config.screen_name)
+                            wait_start_server(server_config.host, server_config.port, server_config.input_port)
+                            ok = True
+                        except ServerIsStartedError:
+                            save_print_exception()
+                            ok = False
+                        if ok:
+                            console.print(f"[green]>[/green] The server has been restarted: {repr(server_config.screen_name)}")
+            time.sleep(all_timeout)
     except KeyboardInterrupt:
         pass
     console.print("[green]>[/green] Watchdog is shutdown!")
@@ -349,15 +411,21 @@ def watchdog(scn: str, localhost: bool, start_delay: int):
     help="Enables checks for GNU Screen, Java and system support.",
     is_flag=True, default=False
 )
-@click.option(
-    "--debug", "-d", "debug",
-    help="Enables debug mode of operation.",
-    is_flag=True
-)
+
 @click.option(
     "--format", "-f", "output_format",
     help="The output format.", type=click.Choice(['text', 'json']),
     default="text", show_default=True
+)
+@click.option(
+    "--debug", "-d", "debug",
+    help="Enables debug mode of operation.",
+    is_flag=True, default=False
+)
+@click.option(
+    "--verbose", "verbose",
+    help="Displaying more detailed logs.",
+    is_flag=True, default=False
 )
 @click.version_option(
     version=prog_version,
@@ -366,11 +434,12 @@ def watchdog(scn: str, localhost: bool, start_delay: int):
 @hand_exception()
 def main(
     check_environment: bool,
+    output_format: Literal['text', 'json'],
     debug: bool,
-    output_format: Literal['text', 'json']
+    verbose: bool
 ):
-    global msmanager, debag_mode, oformat
-    debag_mode, oformat = debug, output_format
+    global msmanager, debug_mode, oformat, verbose_mode
+    debug_mode, verbose_mode, oformat = debug, verbose, output_format
     msmanager = MSManager(check_environment=check_environment)
 
 # ! Add in Group
